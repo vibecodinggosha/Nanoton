@@ -1,0 +1,1750 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>NANOTON — Nano-scale precision on TON</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Share+Tech+Mono&family=Orbitron:wght@400;700;900&family=Rajdhani:wght@300;400;600&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --bg: #020508;
+    --bg2: #040c10;
+    --green: #00ff88;
+    --green-dim: #00cc6a;
+    --green-dark: #003322;
+    --cyan: #00e5ff;
+    --red: #ff3366;
+    --text: #b0c4c0;
+    --text-dim: #556660;
+    --border: #0a2a1f;
+    --glow: 0 0 20px rgba(0,255,136,0.3);
+    --glow-sm: 0 0 8px rgba(0,255,136,0.2);
+  }
+
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+
+  html { scroll-behavior: smooth; }
+
+  body {
+    background: var(--bg);
+    color: var(--text);
+    font-family: 'Rajdhani', sans-serif;
+    min-height: 100vh;
+    overflow-x: hidden;
+  }
+
+  /* Grid background */
+  body::before {
+    content: '';
+    position: fixed;
+    inset: 0;
+    background-image:
+      linear-gradient(rgba(0,255,136,0.03) 1px, transparent 1px),
+      linear-gradient(90deg, rgba(0,255,136,0.03) 1px, transparent 1px);
+    background-size: 40px 40px;
+    pointer-events: none;
+    z-index: 0;
+  }
+
+  /* Radial glow center */
+  body::after {
+    content: '';
+    position: fixed;
+    top: 0; left: 50%;
+    transform: translateX(-50%);
+    width: 800px;
+    height: 600px;
+    background: radial-gradient(ellipse at top, rgba(0,255,136,0.05) 0%, transparent 70%);
+    pointer-events: none;
+    z-index: 0;
+  }
+
+  canvas#particles {
+    position: fixed;
+    inset: 0;
+    z-index: 0;
+    pointer-events: none;
+    opacity: 0.4;
+  }
+
+  .container {
+    position: relative;
+    z-index: 1;
+    max-width: 1100px;
+    margin: 0 auto;
+    padding: 0 24px;
+  }
+
+  /* NAV */
+  nav {
+    position: fixed;
+    top: 0; left: 0; right: 0;
+    z-index: 100;
+    border-bottom: 1px solid var(--border);
+    background: rgba(2,5,8,0.85);
+    backdrop-filter: blur(12px);
+  }
+
+  nav .inner {
+    max-width: 1100px;
+    margin: 0 auto;
+    padding: 0 24px;
+    height: 60px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+  }
+
+  .nav-logo {
+    font-family: 'Orbitron', monospace;
+    font-weight: 900;
+    font-size: 18px;
+    color: var(--green);
+    letter-spacing: 4px;
+    text-shadow: var(--glow-sm);
+  }
+
+  .nav-logo span { color: var(--text-dim); font-weight: 400; }
+
+  .nav-links {
+    display: flex;
+    gap: 32px;
+    list-style: none;
+  }
+
+  .nav-links a {
+    color: var(--text-dim);
+    text-decoration: none;
+    font-size: 13px;
+    letter-spacing: 2px;
+    text-transform: uppercase;
+    transition: color 0.2s;
+    font-family: 'Share Tech Mono', monospace;
+  }
+
+  .nav-links a:hover { color: var(--green); }
+
+  .nav-cta {
+    background: transparent;
+    border: 1px solid var(--green);
+    color: var(--green) !important;
+    padding: 6px 16px;
+    font-family: 'Share Tech Mono', monospace !important;
+    font-size: 12px !important;
+    letter-spacing: 2px;
+    transition: background 0.2s, box-shadow 0.2s !important;
+  }
+
+  .nav-cta:hover {
+    background: rgba(0,255,136,0.1) !important;
+    box-shadow: var(--glow-sm) !important;
+  }
+
+  /* HERO */
+  .hero {
+    min-height: 100vh;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    text-align: center;
+    padding: 100px 24px 60px;
+  }
+
+  .hero-tag {
+    font-family: 'Share Tech Mono', monospace;
+    font-size: 11px;
+    color: var(--text-dim);
+    letter-spacing: 4px;
+    margin-bottom: 24px;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+  }
+
+  .hero-tag::before, .hero-tag::after {
+    content: '';
+    width: 40px;
+    height: 1px;
+    background: var(--text-dim);
+  }
+
+  .hero-title {
+    font-family: 'Orbitron', monospace;
+    font-size: clamp(52px, 10vw, 110px);
+    font-weight: 900;
+    line-height: 0.9;
+    letter-spacing: -2px;
+    color: #fff;
+    margin-bottom: 8px;
+    position: relative;
+  }
+
+  .hero-title .nano {
+    color: var(--green);
+    text-shadow: 0 0 40px rgba(0,255,136,0.5), 0 0 80px rgba(0,255,136,0.2);
+    display: block;
+  }
+
+  .hero-title .ton {
+    color: var(--text-dim);
+    font-size: 0.45em;
+    letter-spacing: 8px;
+    display: block;
+    margin-top: 12px;
+  }
+
+  .hero-sub {
+    font-size: 16px;
+    color: var(--text-dim);
+    letter-spacing: 3px;
+    text-transform: uppercase;
+    margin: 32px 0 48px;
+    font-family: 'Share Tech Mono', monospace;
+  }
+
+  /* PRICE TICKER */
+  .price-hero {
+    display: flex;
+    align-items: baseline;
+    gap: 16px;
+    justify-content: center;
+    margin-bottom: 48px;
+  }
+
+  .price-big {
+    font-family: 'Orbitron', monospace;
+    font-size: clamp(32px, 5vw, 56px);
+    font-weight: 700;
+    color: #fff;
+    letter-spacing: -1px;
+  }
+
+  .price-change {
+    font-family: 'Share Tech Mono', monospace;
+    font-size: 18px;
+    padding: 4px 10px;
+    border-radius: 2px;
+  }
+
+  .price-change.up { color: var(--green); background: rgba(0,255,136,0.08); border: 1px solid rgba(0,255,136,0.2); }
+  .price-change.down { color: var(--red); background: rgba(255,51,102,0.08); border: 1px solid rgba(255,51,102,0.2); }
+
+  /* METRICS STRIP */
+  .metrics-strip {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 1px;
+    background: var(--border);
+    border: 1px solid var(--border);
+    margin-bottom: 80px;
+    width: 100%;
+    max-width: 800px;
+  }
+
+  .metric-item {
+    background: var(--bg2);
+    padding: 20px 24px;
+    text-align: center;
+    transition: background 0.2s;
+  }
+
+  .metric-item:hover { background: rgba(0,255,136,0.03); }
+
+  .metric-label {
+    font-family: 'Share Tech Mono', monospace;
+    font-size: 10px;
+    color: var(--text-dim);
+    letter-spacing: 2px;
+    text-transform: uppercase;
+    margin-bottom: 8px;
+    display: block;
+  }
+
+  .metric-value {
+    font-family: 'Orbitron', monospace;
+    font-size: 16px;
+    font-weight: 700;
+    color: var(--green);
+  }
+
+  .metric-value.neutral { color: #fff; }
+
+  /* HERO BUTTONS */
+  .hero-btns {
+    display: flex;
+    gap: 16px;
+    flex-wrap: wrap;
+    justify-content: center;
+  }
+
+  .btn-primary {
+    background: var(--green);
+    color: #000;
+    border: none;
+    padding: 14px 32px;
+    font-family: 'Orbitron', monospace;
+    font-size: 12px;
+    font-weight: 700;
+    letter-spacing: 3px;
+    text-transform: uppercase;
+    cursor: pointer;
+    text-decoration: none;
+    transition: transform 0.2s, box-shadow 0.2s;
+    clip-path: polygon(0 0, calc(100% - 10px) 0, 100% 10px, 100% 100%, 10px 100%, 0 calc(100% - 10px));
+  }
+
+  .btn-primary:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 8px 30px rgba(0,255,136,0.4);
+  }
+
+  .btn-outline {
+    background: transparent;
+    color: var(--green);
+    border: 1px solid rgba(0,255,136,0.4);
+    padding: 14px 32px;
+    font-family: 'Share Tech Mono', monospace;
+    font-size: 12px;
+    letter-spacing: 3px;
+    text-transform: uppercase;
+    cursor: pointer;
+    text-decoration: none;
+    transition: border-color 0.2s, background 0.2s;
+  }
+
+  .btn-outline:hover {
+    border-color: var(--green);
+    background: rgba(0,255,136,0.05);
+  }
+
+  /* STATS SECTION */
+  .section {
+    padding: 80px 0;
+  }
+
+  .section-header {
+    display: flex;
+    align-items: center;
+    gap: 16px;
+    margin-bottom: 48px;
+  }
+
+  .section-tag {
+    font-family: 'Share Tech Mono', monospace;
+    font-size: 10px;
+    color: var(--green);
+    letter-spacing: 4px;
+    text-transform: uppercase;
+  }
+
+  .section-line {
+    flex: 1;
+    height: 1px;
+    background: linear-gradient(90deg, var(--border), transparent);
+  }
+
+  .section-title {
+    font-family: 'Orbitron', monospace;
+    font-size: 28px;
+    font-weight: 700;
+    color: #fff;
+    margin-bottom: 16px;
+  }
+
+  /* LIVE DATA PANEL */
+  .live-panel {
+    border: 1px solid var(--border);
+    background: var(--bg2);
+    padding: 32px;
+    position: relative;
+    overflow: hidden;
+  }
+
+  .live-panel::before {
+    content: '';
+    position: absolute;
+    top: 0; left: 0; right: 0;
+    height: 2px;
+    background: linear-gradient(90deg, transparent, var(--green), transparent);
+  }
+
+  .live-badge {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    font-family: 'Share Tech Mono', monospace;
+    font-size: 10px;
+    color: var(--green);
+    letter-spacing: 3px;
+    text-transform: uppercase;
+    margin-bottom: 24px;
+  }
+
+  .live-dot {
+    width: 6px;
+    height: 6px;
+    border-radius: 50%;
+    background: var(--green);
+    animation: pulse 1.5s infinite;
+  }
+
+  @keyframes pulse {
+    0%, 100% { opacity: 1; transform: scale(1); }
+    50% { opacity: 0.3; transform: scale(0.8); }
+  }
+
+  .stats-grid {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 24px;
+  }
+
+  .stat-card {
+    border: 1px solid var(--border);
+    padding: 24px;
+    background: var(--bg);
+    position: relative;
+    transition: border-color 0.3s;
+  }
+
+  .stat-card:hover {
+    border-color: rgba(0,255,136,0.3);
+  }
+
+  .stat-card::after {
+    content: '';
+    position: absolute;
+    bottom: 0; left: 0;
+    width: 100%;
+    height: 2px;
+    background: var(--green);
+    transform: scaleX(0);
+    transform-origin: left;
+    transition: transform 0.3s;
+  }
+
+  .stat-card:hover::after { transform: scaleX(1); }
+
+  .stat-label {
+    font-family: 'Share Tech Mono', monospace;
+    font-size: 10px;
+    color: var(--text-dim);
+    letter-spacing: 2px;
+    text-transform: uppercase;
+    margin-bottom: 12px;
+  }
+
+  .stat-val {
+    font-family: 'Orbitron', monospace;
+    font-size: 22px;
+    font-weight: 700;
+    color: #fff;
+  }
+
+  .stat-sub {
+    font-size: 12px;
+    color: var(--text-dim);
+    margin-top: 6px;
+    font-family: 'Share Tech Mono', monospace;
+  }
+  .txn-type { font-weight: bold; }
+
+  /* FEATURES */
+  .features-grid {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 1px;
+    background: var(--border);
+    border: 1px solid var(--border);
+  }
+  @media (max-width: 900px) {
+    .features-grid { grid-template-columns: repeat(2, 1fr); }
+  }
+
+  .feature-card {
+    background: var(--bg2);
+    padding: 40px 32px;
+    transition: background 0.2s;
+    position: relative;
+    overflow: hidden;
+  }
+
+  .feature-card:hover { background: rgba(0,255,136,0.03); }
+
+  .feature-icon {
+    font-size: 28px;
+    margin-bottom: 20px;
+    display: block;
+  }
+
+  .feature-name {
+    font-family: 'Orbitron', monospace;
+    font-size: 14px;
+    font-weight: 700;
+    color: #fff;
+    letter-spacing: 2px;
+    margin-bottom: 12px;
+  }
+
+  .feature-desc {
+    font-size: 14px;
+    color: var(--text-dim);
+    line-height: 1.6;
+    letter-spacing: 0.5px;
+  }
+
+  .feature-num {
+    position: absolute;
+    top: 24px;
+    right: 24px;
+    font-family: 'Orbitron', monospace;
+    font-size: 48px;
+    font-weight: 900;
+    color: rgba(0,255,136,0.04);
+    line-height: 1;
+  }
+
+  /* CONTRACT */
+  .contract-box {
+    border: 1px solid var(--border);
+    background: var(--bg2);
+    padding: 24px 32px;
+    display: flex;
+    align-items: center;
+    gap: 16px;
+    flex-wrap: wrap;
+  }
+
+  .contract-label {
+    font-family: 'Share Tech Mono', monospace;
+    font-size: 10px;
+    color: var(--text-dim);
+    letter-spacing: 3px;
+    text-transform: uppercase;
+    white-space: nowrap;
+  }
+
+  .contract-addr {
+    font-family: 'Share Tech Mono', monospace;
+    font-size: 13px;
+    color: var(--green);
+    flex: 1;
+    word-break: break-all;
+  }
+
+  .copy-btn {
+    background: transparent;
+    border: 1px solid var(--border);
+    color: var(--text-dim);
+    padding: 6px 14px;
+    font-family: 'Share Tech Mono', monospace;
+    font-size: 10px;
+    letter-spacing: 2px;
+    cursor: pointer;
+    transition: all 0.2s;
+    white-space: nowrap;
+  }
+
+  .copy-btn:hover {
+    border-color: var(--green);
+    color: var(--green);
+  }
+
+  /* SOCIAL */
+  .social-bar {
+    display: flex;
+    gap: 16px;
+    flex-wrap: wrap;
+    justify-content: center;
+    padding: 60px 0;
+  }
+
+  .social-link {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 14px 24px;
+    border: 1px solid var(--border);
+    background: var(--bg2);
+    color: var(--text-dim);
+    text-decoration: none;
+    font-family: 'Share Tech Mono', monospace;
+    font-size: 12px;
+    letter-spacing: 2px;
+    transition: all 0.2s;
+  }
+
+  .social-link:hover {
+    border-color: var(--green);
+    color: var(--green);
+    background: rgba(0,255,136,0.05);
+  }
+
+  /* LOADING */
+  .loading-shimmer {
+    background: linear-gradient(90deg, var(--bg2) 25%, rgba(0,255,136,0.05) 50%, var(--bg2) 75%);
+    background-size: 200% 100%;
+    animation: shimmer 1.5s infinite;
+    border-radius: 2px;
+    display: inline-block;
+    min-width: 80px;
+    height: 1em;
+  }
+
+  @keyframes shimmer {
+    0% { background-position: 200% 0; }
+    100% { background-position: -200% 0; }
+  }
+
+  /* FOOTER */
+  footer {
+    border-top: 1px solid var(--border);
+    padding: 32px 24px;
+    text-align: center;
+    font-family: 'Share Tech Mono', monospace;
+    font-size: 11px;
+    color: var(--text-dim);
+    letter-spacing: 2px;
+  }
+
+  footer a { color: var(--green); text-decoration: none; }
+
+  /* SCAN LINE EFFECT */
+  @keyframes scanline {
+    0% { transform: translateY(-100vh); }
+    100% { transform: translateY(100vh); }
+  }
+
+  .scanline {
+    position: fixed;
+    top: 0; left: 0; right: 0;
+    height: 2px;
+    background: linear-gradient(90deg, transparent, rgba(0,255,136,0.15), transparent);
+    animation: scanline 8s linear infinite;
+    pointer-events: none;
+    z-index: 200;
+  }
+
+  /* GLITCH */
+  @keyframes glitch {
+    0%, 94%, 100% { text-shadow: 0 0 40px rgba(0,255,136,0.5), 0 0 80px rgba(0,255,136,0.2); transform: none; }
+    95% { text-shadow: -2px 0 var(--cyan), 2px 0 var(--red), 0 0 40px rgba(0,255,136,0.5); transform: skewX(-1deg); }
+    97% { text-shadow: 2px 0 var(--cyan), -2px 0 var(--red), 0 0 40px rgba(0,255,136,0.5); transform: skewX(1deg); }
+  }
+
+  .hero-title .nano { animation: glitch 5s infinite; }
+
+  /* TICKER */
+  .ticker-wrap {
+    width: 100%;
+    overflow: hidden;
+    border-top: 1px solid var(--border);
+    border-bottom: 1px solid var(--border);
+    background: var(--bg2);
+    padding: 10px 0;
+  }
+
+  .ticker-inner {
+    display: flex;
+    gap: 60px;
+    animation: tickerAnim 20s linear infinite;
+    white-space: nowrap;
+  }
+
+  @keyframes tickerAnim {
+    0% { transform: translateX(0); }
+    100% { transform: translateX(-50%); }
+  }
+
+  .ticker-item {
+    font-family: 'Share Tech Mono', monospace;
+    font-size: 11px;
+    color: var(--text-dim);
+    letter-spacing: 3px;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+  }
+
+  .ticker-item .val { color: var(--green); }
+  .ticker-item .sep { color: var(--border); }
+
+  /* Responsive */
+  @media (max-width: 768px) {
+    .metrics-strip { grid-template-columns: repeat(2, 1fr); }
+    .stats-grid { grid-template-columns: 1fr; }
+    .features-grid { grid-template-columns: 1fr; }
+    .nav-links { display: none; }
+  }
+  @media (max-width: 700px) {
+    #converter > .container > div[style*="grid-template-columns:1fr 1fr"] { grid-template-columns: 1fr !important; }
+  }
+
+  .section-divider {
+    width: 100%;
+    height: 1px;
+    background: linear-gradient(90deg, transparent, var(--border), transparent);
+    margin: 0;
+  }
+
+  .update-time {
+    font-family: 'Share Tech Mono', monospace;
+    font-size: 10px;
+    color: var(--text-dim);
+    letter-spacing: 2px;
+    text-align: right;
+    margin-top: 16px;
+  }
+
+  .pnl-bar {
+    display: flex;
+    gap: 8px;
+    align-items: center;
+    margin-top: 8px;
+  }
+
+  .pnl-segment {
+    height: 4px;
+    border-radius: 0;
+    flex: 1;
+    background: var(--border);
+    position: relative;
+    overflow: hidden;
+  }
+
+  .pnl-fill {
+    position: absolute;
+    top: 0; left: 0;
+    height: 100%;
+    background: var(--green);
+    transition: width 1s ease;
+  }
+
+  .pnl-fill.red { background: var(--red); }
+</style>
+</head>
+<body>
+
+<div class="scanline"></div>
+<canvas id="particles"></canvas>
+
+<nav>
+  <div class="inner">
+    <div class="nav-logo">NANO<span>TON</span></div>
+    <ul class="nav-links">
+      <li><a href="#metrics">Metrics</a></li>
+      <li><a href="#about">About</a></li>
+      <li><a href="#worldmap">Map</a></li>
+      <li><a href="#holders">Holders</a></li>
+      <li><a href="#converter">Convert</a></li>
+      <li><a href="https://t.me/nanoton_token" target="_blank" class="nav-cta">Telegram</a></li>
+    </ul>
+  </div>
+</nav>
+
+<main>
+  <!-- TICKER -->
+  <div class="ticker-wrap" style="margin-top:60px;">
+    <div class="ticker-inner" id="tickerInner">
+      <span class="ticker-item">NANOTON <span class="val" id="tk1">—</span> <span class="sep">///</span></span>
+      <span class="ticker-item">24H VOL <span class="val" id="tk2">—</span> <span class="sep">///</span></span>
+      <span class="ticker-item">MKT CAP <span class="val" id="tk3">—</span> <span class="sep">///</span></span>
+      <span class="ticker-item">LIQUIDITY <span class="val" id="tk4">—</span> <span class="sep">///</span></span>
+      <span class="ticker-item">BUYS 24H <span class="val" id="tk5">—</span> <span class="sep">///</span></span>
+      <span class="ticker-item">SELLS 24H <span class="val" id="tk6">—</span> <span class="sep">///</span></span>
+      <span class="ticker-item">NANOTON <span class="val" id="tk1b">—</span> <span class="sep">///</span></span>
+      <span class="ticker-item">24H VOL <span class="val" id="tk2b">—</span> <span class="sep">///</span></span>
+      <span class="ticker-item">MKT CAP <span class="val" id="tk3b">—</span> <span class="sep">///</span></span>
+      <span class="ticker-item">LIQUIDITY <span class="val" id="tk4b">—</span> <span class="sep">///</span></span>
+      <span class="ticker-item">BUYS 24H <span class="val" id="tk5b">—</span> <span class="sep">///</span></span>
+      <span class="ticker-item">SELLS 24H <span class="val" id="tk6b">—</span> <span class="sep">///</span></span>
+    </div>
+  </div>
+
+  <!-- HERO -->
+  <div class="hero">
+    <div class="hero-tag">TON BLOCKCHAIN // NANO SCALE</div>
+    <h1 class="hero-title">
+      <span class="nano">NANO</span>
+      <span class="ton">T O N</span>
+    </h1>
+    <p class="hero-sub">Precision at the smallest scale</p>
+
+    <div class="price-hero">
+      <div class="price-big" id="heroPrice">
+        <span class="loading-shimmer" style="width:180px; height:40px;"></span>
+      </div>
+      <div class="price-change" id="heroChange">
+        <span class="loading-shimmer" style="width:60px;"></span>
+      </div>
+    </div>
+
+    <div class="metrics-strip" id="metricsStrip">
+      <div class="metric-item">
+        <span class="metric-label">Market Cap</span>
+        <span class="metric-value" id="m1"><span class="loading-shimmer"></span></span>
+      </div>
+      <div class="metric-item">
+        <span class="metric-label">24H Volume</span>
+        <span class="metric-value" id="m2"><span class="loading-shimmer"></span></span>
+      </div>
+      <div class="metric-item">
+        <span class="metric-label">Liquidity</span>
+        <span class="metric-value" id="m3"><span class="loading-shimmer"></span></span>
+      </div>
+      <div class="metric-item">
+        <span class="metric-label">FDV</span>
+        <span class="metric-value neutral" id="m4"><span class="loading-shimmer"></span></span>
+      </div>
+    </div>
+
+    <div class="hero-btns">
+      <a href="https://dexscreener.com/ton/EQAnPOyw97BTuv-rDuT3LQLqQPV4r74K7lcrMbrGXdr-2-oe" target="_blank" class="btn-primary">TRADE NOW</a>
+      <a href="https://t.me/nanoton_token" target="_blank" class="btn-outline">JOIN COMMUNITY</a>
+    </div>
+  </div>
+
+  <div class="section-divider"></div>
+
+  <!-- LIVE METRICS -->
+  <section class="section" id="metrics">
+    <div class="container">
+      <div class="section-header">
+        <span class="section-tag">// live data</span>
+        <div class="section-line"></div>
+      </div>
+
+      <div class="live-panel">
+        <div class="live-badge">
+          <span class="live-dot"></span>
+          LIVE MARKET DATA
+        </div>
+
+        <div class="stats-grid">
+          <div class="stat-card">
+            <div class="stat-label">Price USD</div>
+            <div class="stat-val" id="s-price">—</div>
+            <div class="stat-sub" id="s-price-native">— TON</div>
+          </div>
+          <div class="stat-card">
+            <div class="stat-label">24H Change</div>
+            <div class="stat-val" id="s-change">—</div>
+            <div class="pnl-bar">
+              <div class="pnl-segment"><div class="pnl-fill" id="pnl-fill" style="width:50%"></div></div>
+            </div>
+          </div>
+          <div class="stat-card">
+            <div class="stat-label">Volume 24H</div>
+            <div class="stat-val" id="s-vol">—</div>
+            <div class="stat-sub" id="s-vol-buysell">— buys / — sells</div>
+          </div>
+          <div class="stat-card">
+            <div class="stat-label">Liquidity USD</div>
+            <div class="stat-val" id="s-liq">—</div>
+            <div class="stat-sub">Total pool depth</div>
+          </div>
+          <div class="stat-card">
+            <div class="stat-label">Transactions 24H</div>
+            <div class="stat-val" id="s-txns">—</div>
+            <div class="stat-sub" id="s-txns-sub">—</div>
+          </div>
+          <div class="stat-card">
+            <div class="stat-label">Market Cap / FDV</div>
+            <div class="stat-val" id="s-mcap">—</div>
+            <div class="stat-sub" id="s-fdv">FDV: —</div>
+          </div>
+        </div>
+
+        <div class="update-time" id="updateTime">Last updated: —</div>
+      </div>
+    </div>
+  </section>
+
+  <div class="section-divider"></div>
+
+  <!-- FEATURES -->
+  <section class="section" id="about">
+    <div class="container">
+      <div class="section-header">
+        <span class="section-tag">// about nanoton</span>
+        <div class="section-line"></div>
+      </div>
+      <div class="features-grid">
+        <div class="feature-card">
+          <span class="feature-num">01</span>
+          <span class="feature-icon">⚛️</span>
+          <div class="feature-name">WHAT IS NANOTON?</div>
+          <p class="feature-desc">1 nanoton = 10⁻⁹ TON. It is the smallest indivisible unit of Toncoin — the base denomination of The Open Network, just like Wei is to Ethereum. Every single fee, gas cost, and storage payment on TON is calculated and settled in nanotons.</p>
+        </div>
+        <div class="feature-card">
+          <span class="feature-num">02</span>
+          <span class="feature-icon">⚡</span>
+          <div class="feature-name">THE FUEL OF TON</div>
+          <p class="feature-desc">All transaction fees on TON — compute gas, message forwarding, storage rent — are denominated in nanotons under the hood. 1 TON = 1,000,000,000 nanoton. Every smart contract, every wallet, every NFT on TON runs on nanoton-level precision.</p>
+        </div>
+        <div class="feature-card">
+          <span class="feature-num">03</span>
+          <span class="feature-icon">🔬</span>
+          <div class="feature-name">PRECISION BY DESIGN</div>
+          <p class="feature-desc">TON fees are among the lowest in crypto — often just a few thousand nanotons per transaction. NANOTON embodies that ethos: ultra-precise, infinitely small, yet the foundation that keeps the entire network running.</p>
+        </div>
+        <div class="feature-card">
+          <span class="feature-num">04</span>
+          <span class="feature-icon">🏗️</span>
+          <div class="feature-name">BUILT INTO THE PROTOCOL</div>
+          <p class="feature-desc">The nanoton unit is hardcoded into TON's core architecture. Gas prices, storage fees, forward fees and IHR fees are all computed in nanotons by the TVM (TON Virtual Machine) at the lowest level of the blockchain.</p>
+        </div>
+        <div class="feature-card">
+          <span class="feature-num">05</span>
+          <span class="feature-icon">📐</span>
+          <div class="feature-name">THE MATH</div>
+          <p class="feature-desc" style="font-family:'Share Tech Mono',monospace; font-size:13px; line-height:1.8;">
+            1 TON &nbsp;= 1,000,000,000 nTON<br>
+            1 nTON = 0.000000001 TON<br>
+            1 nTON = 10<sup>-9</sup> TON<br>
+            <span style="color:var(--green); margin-top:8px; display:block;">NANOTON is that unit — tokenized.</span>
+          </p>
+        </div>
+        <div class="feature-card">
+          <span class="feature-num">06</span>
+          <span class="feature-icon">🌐</span>
+          <div class="feature-name">COMMUNITY</div>
+          <p class="feature-desc">NANOTON is the meme token of the TON ecosystem's smallest unit. Powered entirely by its community. Join the Telegram and be part of the nano revolution — where the smallest things move the biggest networks.</p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+
+  <div class="section-divider"></div>
+
+  <!-- NANO WORLD MAP -->
+  <section class="section" id="worldmap">
+    <div class="container">
+      <div class="section-header">
+        <span class="section-tag">// nano world map</span>
+        <div class="section-line"></div>
+      </div>
+      <div class="live-panel" style="padding:0; overflow:hidden; position:relative;">
+        <div style="position:absolute; top:16px; left:20px; z-index:10; display:flex; align-items:center; gap:16px; flex-wrap:wrap;">
+          <div class="live-badge" style="margin:0;">
+            <span class="live-dot"></span>
+            LIVE NANO NETWORK
+          </div>
+          <div style="display:flex; gap:16px; font-family:Share Tech Mono,monospace; font-size:10px; letter-spacing:2px;">
+            <span style="color:var(--green);">● TRANSACTION</span>
+            <span style="color:var(--cyan);">● HOLDER NODE</span>
+            <span style="color:rgba(0,255,136,0.4);">— TOKEN FLOW</span>
+          </div>
+        </div>
+        <div id="mapCounter" style="position:absolute; top:16px; right:20px; z-index:10; font-family:Share Tech Mono,monospace; font-size:10px; color:var(--text-dim); letter-spacing:2px; text-align:right;">
+          <span id="mapTxnCount">0</span> TRANSACTIONS<br>
+          <span id="mapNodeCount">0</span> NODES ACTIVE
+        </div>
+        <canvas id="worldMapCanvas" style="width:100%; display:block;"></canvas>
+      </div>
+    </div>
+  </section>
+
+
+  <div class="section-divider"></div>
+
+  <!-- HOLDERS LEADERBOARD -->
+  <section class="section" id="holders">
+    <div class="container">
+      <div class="section-header">
+        <span class="section-tag">// top holders</span>
+        <div class="section-line"></div>
+      </div>
+
+      <div class="live-panel">
+        <div style="display:flex; align-items:center; justify-content:space-between; margin-bottom:24px; flex-wrap:wrap; gap:12px;">
+          <div class="live-badge" style="margin:0;">
+            <span class="live-dot"></span>
+            LEADERBOARD — UPDATED LIVE
+          </div>
+          <div style="font-family:Share Tech Mono,monospace; font-size:10px; color:var(--text-dim); letter-spacing:2px;">
+            TOKEN: EQA7...N-ne // 54 HOLDERS
+          </div>
+        </div>
+
+        <!-- Table header -->
+        <div style="display:grid; grid-template-columns:40px 1fr 120px 100px 80px; gap:8px; padding:10px 16px; font-family:Share Tech Mono,monospace; font-size:10px; color:var(--text-dim); letter-spacing:2px; border-bottom:1px solid var(--border);">
+          <span>#</span>
+          <span>ADDRESS</span>
+          <span style="text-align:right;">BALANCE</span>
+          <span style="text-align:right;">% SUPPLY</span>
+          <span style="text-align:right;">RANK</span>
+        </div>
+
+        <div id="holdersList"></div>
+
+        <div style="font-family:Share Tech Mono,monospace; font-size:10px; color:var(--text-dim); letter-spacing:2px; text-align:center; margin-top:20px; padding-top:16px; border-top:1px solid var(--border);">
+          DATA VIA <a href="https://tonviewer.com/EQA7Noq5tkCtTGoIxnNOOjhg6XUMs_xaPDdGQ9zpNockN-ne" target="_blank" style="color:var(--green); text-decoration:none;">TONVIEWER ↗</a>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <div class="section-divider"></div>
+
+  <!-- NANO CONVERTER -->
+  <section class="section" id="converter">
+    <div class="container">
+      <div class="section-header">
+        <span class="section-tag">// nano converter</span>
+        <div class="section-line"></div>
+      </div>
+
+      <div style="display:grid; grid-template-columns:1fr 1fr; gap:24px;">
+
+        <!-- Left: converter -->
+        <div class="live-panel">
+          <div class="live-badge" style="margin-bottom:20px;">
+            <span class="live-dot"></span>
+            REAL-TIME CONVERTER
+          </div>
+
+          <!-- Input row -->
+          <div style="margin-bottom:16px;">
+            <label style="font-family:Share Tech Mono,monospace; font-size:10px; color:var(--text-dim); letter-spacing:2px; display:block; margin-bottom:8px;">YOU HAVE (NANOTON)</label>
+            <div style="display:flex; gap:8px; align-items:center;">
+              <input id="cvNano" type="number" value="1000000000" min="0"
+                style="flex:1; background:var(--bg); border:1px solid var(--border); color:var(--green); padding:12px 16px; font-family:Orbitron,monospace; font-size:14px; outline:none; transition:border-color 0.2s;"
+                oninput="convertFromNano()" onfocus="this.style.borderColor='rgba(0,255,136,0.4)'" onblur="this.style.borderColor='var(--border)'">
+              <span style="font-family:Share Tech Mono,monospace; font-size:11px; color:var(--text-dim); white-space:nowrap;">NANO</span>
+            </div>
+          </div>
+
+          <!-- Arrow -->
+          <div style="text-align:center; font-family:Share Tech Mono,monospace; color:var(--text-dim); font-size:18px; margin:8px 0;">⇅</div>
+
+          <!-- Results -->
+          <div style="display:flex; flex-direction:column; gap:10px;">
+            <div style="border:1px solid var(--border); background:var(--bg); padding:14px 16px; display:flex; justify-content:space-between; align-items:center;">
+              <span style="font-family:Share Tech Mono,monospace; font-size:10px; color:var(--text-dim); letter-spacing:2px;">TON</span>
+              <span id="cvTon" style="font-family:Orbitron,monospace; font-size:16px; color:#fff;">1.000000000</span>
+            </div>
+            <div style="border:1px solid var(--border); background:var(--bg); padding:14px 16px; display:flex; justify-content:space-between; align-items:center;">
+              <span style="font-family:Share Tech Mono,monospace; font-size:10px; color:var(--text-dim); letter-spacing:2px;">USD</span>
+              <span id="cvUsd" style="font-family:Orbitron,monospace; font-size:16px; color:var(--green);">—</span>
+            </div>
+            <div style="border:1px solid var(--border); background:var(--bg); padding:14px 16px; display:flex; justify-content:space-between; align-items:center;">
+              <span style="font-family:Share Tech Mono,monospace; font-size:10px; color:var(--text-dim); letter-spacing:2px;">NANOTON TOKEN</span>
+              <span id="cvToken" style="font-family:Orbitron,monospace; font-size:16px; color:var(--cyan);">—</span>
+            </div>
+          </div>
+
+          <!-- Quick amounts -->
+          <div style="display:flex; gap:8px; margin-top:16px; flex-wrap:wrap;">
+            <button onclick="setNano(1e6)" class="copy-btn">1M</button>
+            <button onclick="setNano(1e8)" class="copy-btn">100M</button>
+            <button onclick="setNano(1e9)" class="copy-btn">1B</button>
+            <button onclick="setNano(1e10)" class="copy-btn">10B</button>
+            <button onclick="setNano(1e12)" class="copy-btn">1T</button>
+          </div>
+        </div>
+
+        <!-- Right: USD → NANO -->
+        <div class="live-panel">
+          <div style="font-family:Orbitron,monospace; font-size:14px; font-weight:700; color:#fff; letter-spacing:2px; margin-bottom:20px;">HOW MUCH NANO FOR $?</div>
+
+          <div style="margin-bottom:16px;">
+            <label style="font-family:Share Tech Mono,monospace; font-size:10px; color:var(--text-dim); letter-spacing:2px; display:block; margin-bottom:8px;">AMOUNT (USD)</label>
+            <div style="display:flex; gap:8px; align-items:center;">
+              <span style="font-family:Share Tech Mono,monospace; font-size:16px; color:var(--green);">$</span>
+              <input id="cvUsdIn" type="number" value="100" min="0"
+                style="flex:1; background:var(--bg); border:1px solid var(--border); color:#fff; padding:12px 16px; font-family:Orbitron,monospace; font-size:14px; outline:none; transition:border-color 0.2s;"
+                oninput="convertFromUsd()" onfocus="this.style.borderColor='rgba(0,255,136,0.4)'" onblur="this.style.borderColor='var(--border)'">
+            </div>
+          </div>
+
+          <div style="display:flex; flex-direction:column; gap:10px;">
+            <div style="border:1px solid var(--border); background:var(--bg); padding:14px 16px; display:flex; justify-content:space-between; align-items:center;">
+              <span style="font-family:Share Tech Mono,monospace; font-size:10px; color:var(--text-dim); letter-spacing:2px;">NANOTON TOKEN</span>
+              <span id="cvNanoOut" style="font-family:Orbitron,monospace; font-size:16px; color:var(--green);">—</span>
+            </div>
+            <div style="border:1px solid var(--border); background:var(--bg); padding:14px 16px; display:flex; justify-content:space-between; align-items:center;">
+              <span style="font-family:Share Tech Mono,monospace; font-size:10px; color:var(--text-dim); letter-spacing:2px;">TON NEEDED</span>
+              <span id="cvTonOut" style="font-family:Orbitron,monospace; font-size:16px; color:#fff;">—</span>
+            </div>
+          </div>
+
+          <!-- Price info -->
+          <div style="margin-top:20px; padding:16px; border:1px solid var(--border); background:var(--bg);">
+            <div style="font-family:Share Tech Mono,monospace; font-size:10px; color:var(--text-dim); letter-spacing:2px; margin-bottom:12px;">CURRENT RATES</div>
+            <div style="display:flex; justify-content:space-between; margin-bottom:8px;">
+              <span style="font-family:Share Tech Mono,monospace; font-size:11px; color:var(--text-dim);">1 NANO TOKEN</span>
+              <span id="rate1" style="font-family:Share Tech Mono,monospace; font-size:11px; color:var(--green);">—</span>
+            </div>
+            <div style="display:flex; justify-content:space-between; margin-bottom:8px;">
+              <span style="font-family:Share Tech Mono,monospace; font-size:11px; color:var(--text-dim);">1 TON</span>
+              <span id="rate2" style="font-family:Share Tech Mono,monospace; font-size:11px; color:#fff;">—</span>
+            </div>
+            <div style="display:flex; justify-content:space-between;">
+              <span style="font-family:Share Tech Mono,monospace; font-size:11px; color:var(--text-dim);">1 NANOTON UNIT</span>
+              <span id="rate3" style="font-family:Share Tech Mono,monospace; font-size:11px; color:var(--text-dim);">= 10⁻⁹ TON</span>
+            </div>
+          </div>
+
+          <!-- Quick USD -->
+          <div style="display:flex; gap:8px; margin-top:16px; flex-wrap:wrap;">
+            <button onclick="setUsd(10)" class="copy-btn">$10</button>
+            <button onclick="setUsd(50)" class="copy-btn">$50</button>
+            <button onclick="setUsd(100)" class="copy-btn">$100</button>
+            <button onclick="setUsd(500)" class="copy-btn">$500</button>
+            <button onclick="setUsd(1000)" class="copy-btn">$1K</button>
+          </div>
+        </div>
+
+      </div>
+    </div>
+  </section>
+
+  <div class="section-divider"></div>
+
+  <!-- CONTRACT -->
+  <div class="container" style="padding: 60px 24px;">
+    <div class="section-header">
+      <span class="section-tag">// contract address</span>
+      <div class="section-line"></div>
+    </div>
+    <div class="contract-box">
+      <span class="contract-label">CA</span>
+      <span class="contract-addr" id="caAddr">EQA7Noq5tkCtTGoIxnNOOjhg6XUMs_xaPDdGQ9zpNockN-ne</span>
+      <button class="copy-btn" onclick="copyCA()">COPY</button>
+    </div>
+    <div class="contract-box" style="margin-top: 1px;">
+      <span class="contract-label">PAIR</span>
+      <span class="contract-addr" style="font-size:11px;">EQAnPOyw97BTuv-rDuT3LQLqQPV4r74K7lcrMbrGXdr-2-oe</span>
+      <a href="https://dexscreener.com/ton/EQAnPOyw97BTuv-rDuT3LQLqQPV4r74K7lcrMbrGXdr-2-oe" target="_blank" class="copy-btn">DEXSCREENER ↗</a>
+    </div>
+  </div>
+
+  <!-- SOCIALS -->
+  <div class="social-bar">
+    <a href="https://t.me/nanoton_token" target="_blank" class="social-link">
+      <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor"><path d="M12 0C5.373 0 0 5.373 0 12s5.373 12 12 12 12-5.373 12-12S18.627 0 12 0zm5.894 8.221-1.97 9.28c-.145.658-.537.818-1.084.508l-3-2.21-1.447 1.394c-.16.16-.295.295-.605.295l.213-3.053 5.56-5.023c.242-.213-.054-.333-.373-.12L7.17 13.75l-2.94-.916c-.638-.204-.651-.638.136-.944l11.49-4.43c.535-.194 1.002.131.832.761z"/></svg>
+      TELEGRAM COMMUNITY
+    </a>
+    <a href="https://dexscreener.com/ton/EQAnPOyw97BTuv-rDuT3LQLqQPV4r74K7lcrMbrGXdr-2-oe" target="_blank" class="social-link">
+      <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor"><path d="M2 2h20v20H2z" opacity=".1"/><path d="M3 3v18h18V3H3zm9 14l-5-5 1.41-1.41L12 14.17l6.59-6.58L20 9l-8 8z"/></svg>
+      DEXSCREENER
+    </a>
+    <a href="https://tonviewer.com/EQA7Noq5tkCtTGoIxnNOOjhg6XUMs_xaPDdGQ9zpNockN-ne" target="_blank" class="social-link">
+      <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor"><path d="M12 2L2 7l10 5 10-5-10-5zM2 17l10 5 10-5M2 12l10 5 10-5"/></svg>
+      TONVIEWER
+    </a>
+  </div>
+
+</main>
+
+<footer>
+  <div class="container">
+    <p>© 2025 NANOTON — Built on <a href="https://ton.org" target="_blank">The Open Network</a> // Data powered by <a href="https://dexscreener.com" target="_blank">DexScreener</a></p>
+    <p style="margin-top: 8px; font-size: 10px;">Not financial advice. DYOR. Crypto assets carry risk.</p>
+  </div>
+</footer>
+
+<script>
+// ─── PARTICLES ───────────────────────────────────────────────
+const canvas = document.getElementById('particles');
+const ctx = canvas.getContext('2d');
+let W, H, particles = [];
+
+function resize() {
+  W = canvas.width = window.innerWidth;
+  H = canvas.height = window.innerHeight;
+}
+resize();
+window.addEventListener('resize', resize);
+
+class Particle {
+  constructor() { this.reset(); }
+  reset() {
+    this.x = Math.random() * W;
+    this.y = Math.random() * H;
+    this.vx = (Math.random() - 0.5) * 0.3;
+    this.vy = (Math.random() - 0.5) * 0.3;
+    this.size = Math.random() * 1.5 + 0.5;
+    this.alpha = Math.random() * 0.5 + 0.1;
+    this.life = 0;
+    this.maxLife = Math.random() * 200 + 100;
+  }
+  update() {
+    this.x += this.vx;
+    this.y += this.vy;
+    this.life++;
+    if (this.life > this.maxLife) this.reset();
+  }
+  draw() {
+    ctx.beginPath();
+    ctx.arc(this.x, this.y, this.size, 0, Math.PI * 2);
+    ctx.fillStyle = `rgba(0,255,136,${this.alpha * (1 - this.life/this.maxLife)})`;
+    ctx.fill();
+  }
+}
+
+for (let i = 0; i < 80; i++) particles.push(new Particle());
+
+function animParticles() {
+  ctx.clearRect(0, 0, W, H);
+  particles.forEach(p => { p.update(); p.draw(); });
+  // connections
+  for (let i = 0; i < particles.length; i++) {
+    for (let j = i+1; j < particles.length; j++) {
+      const dx = particles[i].x - particles[j].x;
+      const dy = particles[i].y - particles[j].y;
+      const d = Math.sqrt(dx*dx + dy*dy);
+      if (d < 120) {
+        ctx.beginPath();
+        ctx.strokeStyle = `rgba(0,255,136,${0.06 * (1 - d/120)})`;
+        ctx.lineWidth = 0.5;
+        ctx.moveTo(particles[i].x, particles[i].y);
+        ctx.lineTo(particles[j].x, particles[j].y);
+        ctx.stroke();
+      }
+    }
+  }
+  requestAnimationFrame(animParticles);
+}
+animParticles();
+
+// ─── FORMAT HELPERS ───────────────────────────────────────────
+function fmtUSD(v) {
+  if (!v) return '—';
+  v = parseFloat(v);
+  if (v >= 1e9) return '$' + (v/1e9).toFixed(2) + 'B';
+  if (v >= 1e6) return '$' + (v/1e6).toFixed(2) + 'M';
+  if (v >= 1e3) return '$' + (v/1e3).toFixed(2) + 'K';
+  return '$' + v.toFixed(2);
+}
+
+function fmtPrice(v) {
+  if (!v) return '—';
+  v = parseFloat(v);
+  if (v < 0.000001) return '$' + v.toExponential(3);
+  if (v < 0.001) return '$' + v.toFixed(8);
+  if (v < 1) return '$' + v.toFixed(6);
+  return '$' + v.toFixed(4);
+}
+
+function timeSince(ts) {
+  const s = Math.floor((Date.now()/1000) - ts);
+  if (s < 60) return s + 's';
+  if (s < 3600) return Math.floor(s/60) + 'm';
+  return Math.floor(s/3600) + 'h';
+}
+
+// ─── FETCH DEXSCREENER DATA ───────────────────────────────────
+let pairData = null;
+let priceHistory = [];
+
+async function fetchPairData() {
+  try {
+    const res = await fetch('https://api.dexscreener.com/latest/dex/pairs/ton/EQAnPOyw97BTuv-rDuT3LQLqQPV4r74K7lcrMbrGXdr-2-oe');
+    const json = await res.json();
+    const pair = json.pairs?.[0];
+    if (!pair) return;
+    pairData = pair;
+    updateUI(pair);
+    updateRates();
+    // Store price history
+    const price = parseFloat(pair.priceUsd);
+    priceHistory.push({ price, time: Date.now() });
+    if (priceHistory.length > 60) priceHistory.shift();
+    drawChart(priceHistory);
+  } catch(e) {
+    console.error('DexScreener fetch error:', e);
+  }
+}
+
+function updateUI(pair) {
+  const price = parseFloat(pair.priceUsd || 0);
+  const ch24 = parseFloat(pair.priceChange?.h24 || 0);
+  const vol24 = parseFloat(pair.volume?.h24 || 0);
+  const liq = parseFloat(pair.liquidity?.usd || 0);
+  const mcap = parseFloat(pair.marketCap || 0);
+  const fdv = parseFloat(pair.fdv || 0);
+  const buys = pair.txns?.h24?.buys || 0;
+  const sells = pair.txns?.h24?.sells || 0;
+  const isUp = ch24 >= 0;
+
+  // Hero
+  document.getElementById('heroPrice').textContent = fmtPrice(price);
+  const chEl = document.getElementById('heroChange');
+  chEl.textContent = (isUp ? '+' : '') + ch24.toFixed(2) + '%';
+  chEl.className = 'price-change ' + (isUp ? 'up' : 'down');
+
+  // Strip
+  document.getElementById('m1').textContent = fmtUSD(mcap) || fmtUSD(fdv);
+  document.getElementById('m2').textContent = fmtUSD(vol24);
+  document.getElementById('m3').textContent = fmtUSD(liq);
+  document.getElementById('m4').textContent = fmtUSD(fdv);
+
+  // Stats
+  document.getElementById('s-price').textContent = fmtPrice(price);
+  document.getElementById('s-price-native').textContent = parseFloat(pair.priceNative || 0).toFixed(8) + ' TON';
+  const sChEl = document.getElementById('s-change');
+  sChEl.textContent = (isUp ? '+' : '') + ch24.toFixed(2) + '%';
+  sChEl.style.color = isUp ? 'var(--green)' : 'var(--red)';
+  const fillEl = document.getElementById('pnl-fill');
+  const fillPct = Math.min(Math.abs(ch24) * 2, 100);
+  fillEl.style.width = fillPct + '%';
+  fillEl.className = 'pnl-fill' + (isUp ? '' : ' red');
+
+  document.getElementById('s-vol').textContent = fmtUSD(vol24);
+  document.getElementById('s-vol-buysell').textContent = buys + ' buys / ' + sells + ' sells';
+  document.getElementById('s-liq').textContent = fmtUSD(liq);
+  document.getElementById('s-txns').textContent = (buys + sells).toLocaleString();
+  document.getElementById('s-txns-sub').textContent = buys + ' buys / ' + sells + ' sells';
+  document.getElementById('s-mcap').textContent = fmtUSD(mcap) || fmtUSD(fdv);
+  document.getElementById('s-fdv').textContent = 'FDV: ' + fmtUSD(fdv);
+
+  // Ticker
+  const tkPairs = [[fmtPrice(price),'tk1','tk1b'],[fmtUSD(vol24),'tk2','tk2b'],[fmtUSD(mcap||fdv),'tk3','tk3b'],[fmtUSD(liq),'tk4','tk4b'],[buys+' TXN','tk5','tk5b'],[sells+' TXN','tk6','tk6b']];
+  tkPairs.forEach(([val, a, b]) => {
+    const ea = document.getElementById(a), eb = document.getElementById(b);
+    if (ea) ea.textContent = val;
+    if (eb) eb.textContent = val;
+  });
+
+  document.getElementById('updateTime').textContent = 'Last updated: ' + new Date().toLocaleTimeString();
+
+  // Trigger map flows based on real tx activity
+  if (typeof window.spawnMapFlow === 'function') {
+    const totalTxns = buys + sells;
+    // Spawn 1 flow per ~50 txns, max 5 at once, min 1 if there's any activity
+    const flowCount = Math.max(totalTxns > 0 ? 1 : 0, Math.min(5, Math.floor(totalTxns / 50)));
+    for (let i = 0; i < flowCount; i++) {
+      setTimeout(() => window.spawnMapFlow(), i * 400);
+    }
+  }
+}
+
+// ─── COPY CA ──────────────────────────────────────────────────
+function copyCA() {
+  navigator.clipboard.writeText('EQA7Noq5tkCtTGoIxnNOOjhg6XUMs_xaPDdGQ9zpNockN-ne');
+  const btn = document.querySelector('.copy-btn');
+  btn.textContent = 'COPIED ✓';
+  btn.style.color = 'var(--green)';
+  setTimeout(() => { btn.textContent = 'COPY'; btn.style.color = ''; }, 2000);
+}
+
+
+
+// ─── WORLD MAP ────────────────────────────────────────────────
+(function() {
+  const mc = document.getElementById('worldMapCanvas');
+  if (!mc) return;
+  const mctx = mc.getContext('2d');
+
+  // Major cities with lat/lon
+  const CITIES = [
+    { name: 'New York',    lat: 40.7,  lon: -74.0  },
+    { name: 'London',      lat: 51.5,  lon: -0.1   },
+    { name: 'Tokyo',       lat: 35.7,  lon: 139.7  },
+    { name: 'Singapore',   lat: 1.3,   lon: 103.8  },
+    { name: 'Dubai',       lat: 25.2,  lon: 55.3   },
+    { name: 'Sydney',      lat: -33.9, lon: 151.2  },
+    { name: 'São Paulo',   lat: -23.5, lon: -46.6  },
+    { name: 'Moscow',      lat: 55.75, lon: 37.6   },
+    { name: 'Berlin',      lat: 52.5,  lon: 13.4   },
+    { name: 'Lagos',       lat: 6.5,   lon: 3.4    },
+    { name: 'Mumbai',      lat: 19.1,  lon: 72.9   },
+    { name: 'Seoul',       lat: 37.6,  lon: 126.9  },
+    { name: 'Paris',       lat: 48.9,  lon: 2.3    },
+    { name: 'Cairo',       lat: 30.0,  lon: 31.2   },
+    { name: 'Chicago',     lat: 41.9,  lon: -87.6  },
+    { name: 'Jakarta',     lat: -6.2,  lon: 106.8  },
+    { name: 'Istanbul',    lat: 41.0,  lon: 28.9   },
+    { name: 'Kyiv',        lat: 50.4,  lon: 30.5   },
+    { name: 'Amsterdam',   lat: 52.4,  lon: 4.9    },
+    { name: 'Hong Kong',   lat: 22.3,  lon: 114.2  },
+    { name: 'Toronto',     lat: 43.7,  lon: -79.4  },
+    { name: 'Bogotá',      lat: 4.7,   lon: -74.1  },
+    { name: 'Nairobi',     lat: -1.3,  lon: 36.8   },
+    { name: 'Bangkok',     lat: 13.8,  lon: 100.5  },
+    { name: 'Riyadh',      lat: 24.7,  lon: 46.7   },
+    { name: 'Mexico City', lat: 19.4,  lon: -99.1  },
+    { name: 'Warsaw',      lat: 52.2,  lon: 21.0   },
+    { name: 'Zurich',      lat: 47.4,  lon: 8.5    },
+    { name: 'Oslo',        lat: 59.9,  lon: 10.7   },
+    { name: 'LA',          lat: 34.0,  lon: -118.2 },
+  ];
+
+  // World map outline as simplified polygon paths (Mercator projection)
+  // We'll draw continents as rough filled shapes
+  const CONTINENTS = [
+    // North America
+    [[10,-85],[10,-60],[30,-60],[30,-50],[40,-52],[50,-55],[60,-65],[70,-90],[70,-140],[60,-145],[55,-130],[50,-125],[40,-125],[30,-110],[20,-105],[10,-85]],
+    // South America
+    [[10,-75],[5,-55],[-5,-35],[-15,-35],[-35,-55],[-55,-65],[-55,-70],[-45,-70],[-30,-50],[-15,-40],[-5,-35],[10,-75]],
+    // Europe
+    [[35,-5],[40,0],[45,10],[50,15],[55,25],[60,30],[65,25],[70,30],[70,20],[60,10],[55,5],[50,0],[45,-5],[40,-10],[35,-5]],
+    // Africa
+    [[35,-5],[35,40],[30,45],[15,45],[5,40],[-5,40],[-20,35],[-35,25],[-35,15],[-20,10],[-5,5],[5,5],[15,0],[25,5],[35,-5]],
+    // Asia (simplified)
+    [[70,30],[70,140],[60,145],[50,140],[40,130],[30,120],[20,110],[10,100],[0,100],[10,80],[20,70],[30,60],[40,55],[50,60],[60,50],[70,30]],
+    // Australia
+    [[-15,130],[-15,145],[-25,155],[-40,150],[-45,140],[-40,130],[-30,115],[-25,115],[-15,130]],
+  ];
+
+  let W, H;
+  const nodes = [];
+  const pulses = [];
+  const flows = [];
+  let txnTotal = 0;
+  let frame = 0;
+
+  function resize() {
+    const rect = mc.parentElement.getBoundingClientRect();
+    W = mc.width = rect.width;
+    H = mc.height = Math.max(340, rect.width * 0.45);
+    mc.style.height = H + 'px';
+  }
+
+  function latLonToXY(lat, lon) {
+    // Mercator
+    const x = ((lon + 180) / 360) * W;
+    const latRad = lat * Math.PI / 180;
+    const mercN = Math.log(Math.tan(Math.PI / 4 + latRad / 2));
+    const y = (H / 2) - (W * mercN / (2 * Math.PI));
+    return { x, y };
+  }
+
+  function initNodes() {
+    nodes.length = 0;
+    CITIES.forEach((c, i) => {
+      const pos = latLonToXY(c.lat, c.lon);
+      nodes.push({
+        ...pos,
+        name: c.name,
+        size: 2 + Math.random() * 3,
+        alpha: 0.6 + Math.random() * 0.4,
+        pulse: Math.random() * Math.PI * 2,
+        isHolder: Math.random() > 0.5,
+        activity: Math.random(),
+      });
+    });
+  }
+
+  function drawMap() {
+    // Background
+    mctx.fillStyle = '#020508';
+    mctx.fillRect(0, 0, W, H);
+
+    // Grid
+    mctx.strokeStyle = 'rgba(10,42,31,0.4)';
+    mctx.lineWidth = 0.5;
+    for (let i = 0; i <= 12; i++) {
+      const x = (i / 12) * W;
+      mctx.beginPath(); mctx.moveTo(x, 0); mctx.lineTo(x, H); mctx.stroke();
+    }
+    for (let i = 0; i <= 6; i++) {
+      const y = (i / 6) * H;
+      mctx.beginPath(); mctx.moveTo(0, y); mctx.lineTo(W, y); mctx.stroke();
+    }
+
+    // Continents
+    CONTINENTS.forEach(poly => {
+      mctx.beginPath();
+      poly.forEach(([lat, lon], i) => {
+        const {x, y} = latLonToXY(lat, lon);
+        if (i === 0) mctx.moveTo(x, y);
+        else mctx.lineTo(x, y);
+      });
+      mctx.closePath();
+      mctx.fillStyle = 'rgba(0,40,25,0.6)';
+      mctx.fill();
+      mctx.strokeStyle = 'rgba(0,255,136,0.12)';
+      mctx.lineWidth = 0.8;
+      mctx.stroke();
+    });
+  }
+
+  function drawFlows() {
+    flows.forEach((fl, idx) => {
+      fl.progress += 0.012;
+      if (fl.progress > 1.2) { flows.splice(idx, 1); return; }
+
+      const t = Math.min(fl.progress, 1);
+      // Bezier curve
+      const cx = (fl.x1 + fl.x2) / 2;
+      const cy = Math.min(fl.y1, fl.y2) - Math.abs(fl.x2 - fl.x1) * 0.3;
+
+      // Draw arc
+      mctx.beginPath();
+      const steps = 40;
+      for (let s = 0; s <= steps * t; s++) {
+        const st = s / steps;
+        const bx = (1-st)*(1-st)*fl.x1 + 2*(1-st)*st*cx + st*st*fl.x2;
+        const by = (1-st)*(1-st)*fl.y1 + 2*(1-st)*st*cy + st*st*fl.y2;
+        if (s === 0) mctx.moveTo(bx, by);
+        else mctx.lineTo(bx, by);
+      }
+      const alpha = (1 - Math.abs(fl.progress - 0.5) * 1.5) * 0.6;
+      mctx.strokeStyle = `rgba(0,255,136,${Math.max(0, alpha)})`;
+      mctx.lineWidth = 0.8;
+      mctx.shadowColor = 'rgba(0,255,136,0.3)';
+      mctx.shadowBlur = 4;
+      mctx.stroke();
+      mctx.shadowBlur = 0;
+
+      // Moving dot
+      if (t < 1) {
+        const bt = t;
+        const bx = (1-bt)*(1-bt)*fl.x1 + 2*(1-bt)*bt*cx + bt*bt*fl.x2;
+        const by = (1-bt)*(1-bt)*fl.y1 + 2*(1-bt)*bt*cy + bt*bt*fl.y2;
+        mctx.beginPath();
+        mctx.arc(bx, by, 2.5, 0, Math.PI * 2);
+        mctx.fillStyle = 'rgba(0,255,136,0.9)';
+        mctx.shadowColor = 'rgba(0,255,136,0.8)';
+        mctx.shadowBlur = 8;
+        mctx.fill();
+        mctx.shadowBlur = 0;
+      }
+    });
+  }
+
+  function drawNodes() {
+    frame++;
+    nodes.forEach(n => {
+      n.pulse += 0.04;
+      const pAlpha = (Math.sin(n.pulse) + 1) / 2;
+
+      // Pulse ring
+      mctx.beginPath();
+      mctx.arc(n.x, n.y, n.size + 4 + pAlpha * 8, 0, Math.PI * 2);
+      mctx.strokeStyle = n.isHolder
+        ? `rgba(0,229,255,${pAlpha * 0.2})`
+        : `rgba(0,255,136,${pAlpha * 0.25})`;
+      mctx.lineWidth = 1;
+      mctx.stroke();
+
+      // Core dot
+      mctx.beginPath();
+      mctx.arc(n.x, n.y, n.size, 0, Math.PI * 2);
+      mctx.fillStyle = n.isHolder ? 'rgba(0,229,255,0.9)' : 'rgba(0,255,136,0.9)';
+      mctx.shadowColor = n.isHolder ? 'rgba(0,229,255,0.6)' : 'rgba(0,255,136,0.6)';
+      mctx.shadowBlur = 10;
+      mctx.fill();
+      mctx.shadowBlur = 0;
+
+      // Label (only if W > 600)
+      if (W > 600 && n.size > 3) {
+        mctx.font = '8px Share Tech Mono, monospace';
+        mctx.fillStyle = 'rgba(0,255,136,0.5)';
+        mctx.fillText(n.name, n.x + n.size + 3, n.y + 3);
+      }
+    });
+  }
+
+  function drawPulses() {
+    pulses.forEach((p, idx) => {
+      p.r += 2.5;
+      p.alpha -= 0.025;
+      if (p.alpha <= 0) { pulses.splice(idx, 1); return; }
+      mctx.beginPath();
+      mctx.arc(p.x, p.y, p.r, 0, Math.PI * 2);
+      mctx.strokeStyle = `rgba(0,255,136,${p.alpha})`;
+      mctx.lineWidth = 1.5;
+      mctx.stroke();
+    });
+  }
+
+  window.spawnMapFlow = function spawnFlow() {
+    const a = nodes[Math.floor(Math.random() * nodes.length)];
+    const b = nodes[Math.floor(Math.random() * nodes.length)];
+    if (a === b) return;
+    flows.push({ x1: a.x, y1: a.y, x2: b.x, y2: b.y, progress: 0 });
+    pulses.push({ x: a.x, y: a.y, r: 0, alpha: 0.8 });
+    txnTotal++;
+    document.getElementById('mapTxnCount').textContent = txnTotal.toLocaleString();
+    document.getElementById('mapNodeCount').textContent = nodes.length;
+  }
+
+  function animate() {
+    drawMap();
+    drawFlows();
+    drawNodes();
+    drawPulses();
+    requestAnimationFrame(animate);
+  }
+
+  resize();
+  initNodes();
+  window.addEventListener('resize', () => { resize(); initNodes(); });
+
+
+  animate();
+})();
+
+
+
+// ─── LEADERBOARD ──────────────────────────────────────────────
+const JETTON_CA = 'EQA7Noq5tkCtTGoIxnNOOjhg6XUMs_xaPDdGQ9zpNockN-ne';
+const RANK_LABELS = ['🥇 WHALE','🥈 SHARK','🥉 DOLPHIN','💎 HOLDER','💎 HOLDER','🐟 FISH','🐟 FISH','🦐 SHRIMP','🦐 SHRIMP','🦐 SHRIMP'];
+
+async function fetchHolders() {
+  const list = document.getElementById('holdersList');
+  if (!list) return;
+
+  // Show loading state
+  list.innerHTML = '<div style="padding:24px;text-align:center;font-family:Share Tech Mono,monospace;font-size:11px;color:var(--text-dim);letter-spacing:2px;">FETCHING HOLDERS FROM CHAIN...</div>';
+
+  try {
+    const res = await fetch(
+      `https://tonapi.io/v2/jettons/${JETTON_CA}/holders?limit=20&offset=0`,
+      { headers: { 'Accept': 'application/json' } }
+    );
+    if (!res.ok) throw new Error('API ' + res.status);
+    const data = await res.json();
+    renderHolders(data.addresses || []);
+  } catch(e) {
+    console.error('Holders fetch error:', e);
+    list.innerHTML = '<div style="padding:24px;text-align:center;font-family:Share Tech Mono,monospace;font-size:11px;color:var(--text-dim);letter-spacing:2px;">UNABLE TO LOAD — <a href="https://tonviewer.com/' + JETTON_CA + '?section=holders" target="_blank" style="color:var(--green);text-decoration:none;">VIEW ON TONVIEWER ↗</a></div>';
+  }
+}
+
+function renderHolders(holders) {
+  const list = document.getElementById('holdersList');
+  if (!list || !holders.length) return;
+
+  // Calculate total supply from holders (sum of all balances as proxy)
+  const maxBal = holders.reduce((sum, h) => sum + parseFloat(h.balance || 0), 0);
+
+  list.innerHTML = '';
+  holders.forEach((h, i) => {
+    const bal = parseFloat(h.balance || 0);
+    const decimals = h.jetton?.decimals ?? 9;
+    const balDisplay = bal / Math.pow(10, decimals);
+
+    // Format address
+    const addr = h.owner?.address || h.address || '—';
+    const name = h.owner?.name || h.owner?.username || null;
+    const shortAddr = addr.length > 14
+      ? addr.slice(0, 6) + '···' + addr.slice(-4)
+      : addr;
+
+    // % relative to top holder
+    const pctOfTop = maxBal > 0 ? (bal / maxBal * 100) : 0;
+    // % of 100M supply
+    const totalSupply = 100_000_000 * Math.pow(10, decimals);
+    const pctSupply = (bal / totalSupply * 100).toFixed(2);
+
+    const rankColor = i === 0 ? 'var(--green)' : i < 3 ? 'var(--cyan)' : 'var(--text-dim)';
+
+    // Format balance display
+    let balStr;
+    if (balDisplay >= 1e9) balStr = (balDisplay/1e9).toFixed(2) + 'B';
+    else if (balDisplay >= 1e6) balStr = (balDisplay/1e6).toFixed(2) + 'M';
+    else if (balDisplay >= 1e3) balStr = (balDisplay/1e3).toFixed(2) + 'K';
+    else balStr = balDisplay.toFixed(2);
+
+    const row = document.createElement('div');
+    row.style.cssText = 'display:grid;grid-template-columns:40px 1fr 110px 90px 80px;gap:8px;padding:12px 16px;border-bottom:1px solid rgba(10,42,31,0.5);transition:background 0.15s;align-items:center;cursor:pointer;';
+    row.onmouseover = () => row.style.background = 'rgba(0,255,136,0.03)';
+    row.onmouseout  = () => row.style.background = '';
+    row.onclick = () => window.open('https://tonviewer.com/' + addr, '_blank');
+    row.title = addr;
+
+    row.innerHTML = `
+      <span style="font-family:Orbitron,monospace;font-size:13px;font-weight:700;color:${rankColor};">${String(i+1).padStart(2,'0')}</span>
+      <div>
+        <div style="font-family:Share Tech Mono,monospace;font-size:12px;color:#fff;">${name ? '<span style="color:var(--green)">' + name + '</span>' : shortAddr}</div>
+        ${name ? '<div style="font-family:Share Tech Mono,monospace;font-size:10px;color:var(--text-dim);margin-top:2px;">' + shortAddr + '</div>' : ''}
+        <div style="margin-top:5px;height:2px;background:var(--border);width:100%;">
+          <div style="height:2px;width:${pctOfTop.toFixed(1)}%;background:${i===0?'var(--green)':i<3?'var(--cyan)':'rgba(0,255,136,0.35)'};transition:width 1.2s ease;"></div>
+        </div>
+      </div>
+      <span style="font-family:Share Tech Mono,monospace;font-size:11px;color:#fff;text-align:right;">${balStr}</span>
+      <span style="font-family:Orbitron,monospace;font-size:12px;color:${rankColor};text-align:right;">${pctSupply}%</span>
+      <span style="font-family:Share Tech Mono,monospace;font-size:10px;color:var(--text-dim);text-align:right;">${RANK_LABELS[i]||'🦐'}</span>
+    `;
+    list.appendChild(row);
+  });
+}
+
+// ─── CONVERTER ────────────────────────────────────────────────
+function fmtBig(n) {
+  if (!n && n !== 0) return '—';
+  if (n >= 1e12) return (n/1e12).toFixed(3) + 'T';
+  if (n >= 1e9)  return (n/1e9).toFixed(3) + 'B';
+  if (n >= 1e6)  return (n/1e6).toFixed(3) + 'M';
+  if (n >= 1e3)  return (n/1e3).toFixed(3) + 'K';
+  return n.toFixed(2);
+}
+
+function updateRates() {
+  if (!pairData) return;
+  const tokenPrice = parseFloat(pairData.priceUsd || 0);
+  const tonPrice = pairData.priceNative ? (tokenPrice / parseFloat(pairData.priceNative)) : 0;
+  const r1 = document.getElementById('rate1');
+  const r2 = document.getElementById('rate2');
+  if (r1) r1.textContent = '$' + tokenPrice.toExponential(3);
+  if (r2) r2.textContent = tonPrice ? '$' + tonPrice.toFixed(4) : '—';
+  convertFromNano();
+  convertFromUsd();
+}
+
+function convertFromNano() {
+  const nano = parseFloat(document.getElementById('cvNano')?.value || 0);
+  const tokenPrice = pairData ? parseFloat(pairData.priceUsd || 0) : 0;
+  const tonPrice   = pairData && pairData.priceNative ? (tokenPrice / parseFloat(pairData.priceNative)) : 0;
+  // nano here = nanoton units (10^-9 TON)
+  const ton = nano * 1e-9;
+  const usd = ton * tonPrice;
+  const cvTon = document.getElementById('cvTon');
+  const cvUsd = document.getElementById('cvUsd');
+  const cvToken = document.getElementById('cvToken');
+  if (cvTon) cvTon.textContent = ton.toFixed(9);
+  if (cvUsd) cvUsd.textContent = usd > 0 ? '$' + usd.toFixed(6) : '—';
+  // How many NANOTON tokens can you get for this amount of TON?
+  if (cvToken) {
+    const tokens = tokenPrice > 0 && tonPrice > 0 ? (usd / tokenPrice) : 0;
+    cvToken.textContent = tokens > 0 ? fmtBig(tokens) + ' NANO' : '—';
+  }
+}
+
+function convertFromUsd() {
+  const usd = parseFloat(document.getElementById('cvUsdIn')?.value || 0);
+  const tokenPrice = pairData ? parseFloat(pairData.priceUsd || 0) : 0;
+  const tonPrice   = pairData && pairData.priceNative ? (tokenPrice / parseFloat(pairData.priceNative)) : 0;
+  const nanoOut = document.getElementById('cvNanoOut');
+  const tonOut  = document.getElementById('cvTonOut');
+  if (tokenPrice > 0) {
+    const tokens = usd / tokenPrice;
+    if (nanoOut) nanoOut.textContent = fmtBig(tokens) + ' NANO';
+  } else {
+    if (nanoOut) nanoOut.textContent = '—';
+  }
+  if (tonPrice > 0) {
+    const ton = usd / tonPrice;
+    if (tonOut) tonOut.textContent = ton.toFixed(4) + ' TON';
+  } else {
+    if (tonOut) tonOut.textContent = '—';
+  }
+}
+
+function setNano(v) {
+  const el = document.getElementById('cvNano');
+  if (el) { el.value = v; convertFromNano(); }
+}
+
+function setUsd(v) {
+  const el = document.getElementById('cvUsdIn');
+  if (el) { el.value = v; convertFromUsd(); }
+}
+
+
+// ─── INIT ─────────────────────────────────────────────────────
+fetchPairData();
+fetchHolders();
+setInterval(fetchHolders, 60000); // refresh holders every 60s
+setInterval(fetchPairData, 15000);
+</script>
+</body>
+</html>
